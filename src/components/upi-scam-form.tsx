@@ -4,76 +4,190 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { analyzeUpiTransaction, type AnalyzeUpiTransactionOutput } from '@/ai/flows/analyze-upi-transaction';
+import {
+  analyzeUpiTransaction,
+  type AnalyzeUpiTransactionOutput,
+} from '@/ai/flows/analyze-upi-transaction';
 
 import { Button } from '@/components/ui/button';
 import {
   Form,
   FormControl,
+  FormDescription,
   FormField,
   FormItem,
   FormLabel,
   FormMessage,
 } from '@/components/ui/form';
 import { Textarea } from '@/components/ui/textarea';
+import { Input } from '@/components/ui/input';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Loader2, Shield, ShieldAlert, ShieldCheck } from 'lucide-react';
+import {
+  Loader2,
+  Shield,
+  ShieldAlert,
+  ShieldCheck,
+  Share,
+  FileDown,
+  Ban,
+  BadgeInfo,
+} from 'lucide-react';
 import { Badge } from './ui/badge';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
+import { Progress } from '@/components/ui/progress';
 
 const formSchema = z.object({
-  transactionDetails: z.string().min(10, {
-    message: 'Transaction details must be at least 10 characters.',
-  }),
+  transactionDetails: z.string().optional(),
+  amount: z.coerce.number().positive('Amount must be positive.'),
+  recipient: z.string().min(3, 'Recipient ID must be at least 3 characters.'),
+  recipientType: z.enum(['individual', 'business', 'unknown']),
+  description: z.string().optional(),
+  referenceCode: z.string().optional(),
+  compare: z.boolean().default(false),
 });
 
 export function UpiScamForm() {
-  const [result, setResult] = useState<AnalyzeUpiTransactionOutput | null>(null);
+  const [result, setResult] = useState<AnalyzeUpiTransactionOutput | null>(
+    null
+  );
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      transactionDetails: '',
+      amount: undefined,
+      recipient: '',
+      recipientType: 'individual',
+      description: '',
+      referenceCode: '',
+      compare: false,
     },
   });
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setIsLoading(true);
     setResult(null);
+
+    const transactionDetails = `Amount: ₹${values.amount}, Recipient: ${values.recipient} (${values.recipientType}), Description: ${values.description}, Ref: ${values.referenceCode}`;
+    const input = { transactionDetails };
+
     try {
-      const analysisResult = await analyzeUpiTransaction(values);
+      const analysisResult = await analyzeUpiTransaction(input);
       setResult(analysisResult);
     } catch (error) {
       console.error('Error analyzing transaction:', error);
       toast({
         variant: 'destructive',
         title: 'Analysis Failed',
-        description: 'There was an error processing your request. Please try again.',
+        description:
+          'There was an error processing your request. Please try again.',
       });
     } finally {
       setIsLoading(false);
     }
   }
 
+  const getRiskColor = (score: number) => {
+    if (score > 7) return 'red';
+    if (score > 4) return 'orange';
+    return 'green';
+  };
+  
+  const riskColor = result ? getRiskColor(result.riskScore) : 'gray';
+
   return (
     <>
       <Card>
-        <CardContent className="p-6">
+        <CardHeader>
+            <CardTitle>Enter Transaction Details</CardTitle>
+        </CardHeader>
+        <CardContent>
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <FormField
+                  control={form.control}
+                  name="amount"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Transaction Amount</FormLabel>
+                      <div className="relative">
+                        <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-muted-foreground">
+                          ₹
+                        </span>
+                        <FormControl>
+                          <Input
+                            type="number"
+                            placeholder="0.00"
+                            className="pl-7"
+                            {...field}
+                          />
+                        </FormControl>
+                      </div>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="recipient"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Recipient Name / UPI ID</FormLabel>
+                      <FormControl>
+                        <Input placeholder="e.g., example@upi" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+
               <FormField
                 control={form.control}
-                name="transactionDetails"
+                name="recipientType"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Transaction Details</FormLabel>
+                    <FormLabel>Recipient Type</FormLabel>
+                    <Select
+                      onValueChange={field.onChange}
+                      defaultValue={field.value}
+                    >
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select recipient type" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="individual">Individual</SelectItem>
+                        <SelectItem value="business">Business</SelectItem>
+                        <SelectItem value="unknown">Unknown</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="description"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Transaction Description</FormLabel>
                     <FormControl>
                       <Textarea
-                        placeholder="e.g., 'Received 5000 from an unknown UPI ID for a lottery you did not enter...'"
-                        className="min-h-[120px]"
+                        placeholder="e.g., 'Payment for electricity bill refund'"
                         {...field}
                       />
                     </FormControl>
@@ -81,55 +195,159 @@ export function UpiScamForm() {
                   </FormItem>
                 )}
               />
-              <Button type="submit" className="w-full" disabled={isLoading}>
-                {isLoading ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Analyzing...
-                  </>
-                ) : (
-                  'Analyze Transaction'
+
+              <FormField
+                control={form.control}
+                name="referenceCode"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>OTP / Reference Code (Optional)</FormLabel>
+                    <FormControl>
+                      <Input placeholder="e.g., 123456" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
                 )}
-              </Button>
+              />
+              
+              <div className="flex items-start space-x-3 space-y-0">
+                 <FormField
+                  control={form.control}
+                  name="compare"
+                  render={({ field }) => (
+                    <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                      <FormControl>
+                        <Checkbox
+                          checked={field.value}
+                          onCheckedChange={field.onChange}
+                        />
+                      </FormControl>
+                      <div className="space-y-1 leading-none">
+                        <FormLabel>
+                          Compare with similar scams
+                        </FormLabel>
+                         <FormDescription>
+                          Check our database for similar known scam patterns.
+                        </FormDescription>
+                      </div>
+                    </FormItem>
+                  )}
+                />
+              </div>
+
+              <div className="flex gap-4">
+                <Button type="submit" className="w-full" disabled={isLoading}>
+                  {isLoading ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Quick Check...
+                    </>
+                  ) : (
+                    'Quick Check'
+                  )}
+                </Button>
+                <Button
+                  type="submit"
+                  variant="secondary"
+                  className="w-full"
+                  disabled={isLoading}
+                  onClick={form.handleSubmit(onSubmit)}
+                >
+                  {isLoading ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Analyzing...
+                    </>
+                  ) : (
+                    'Deep Analysis'
+                  )}
+                </Button>
+              </div>
             </form>
           </Form>
         </CardContent>
       </Card>
 
+       {isLoading && (
+        <Card className="mt-8">
+            <CardHeader>
+                <CardTitle>Analyzing transaction...</CardTitle>
+            </CardHeader>
+            <CardContent className="flex flex-col items-center justify-center space-y-4 p-10">
+                <Loader2 className="h-12 w-12 animate-spin text-primary" />
+                <p className="text-muted-foreground">Estimated time remaining: a few seconds</p>
+                <Progress value={33} className="w-full" />
+            </CardContent>
+        </Card>
+      )}
+
       {result && (
-        <Card
-          className={cn('mt-8 border-2', {
-            'border-destructive bg-destructive/10': result.isScam,
-            'border-green-600 bg-green-600/10': !result.isScam,
-          })}
-        >
+        <Card className="mt-8">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              {result.isScam ? (
-                <ShieldAlert className="h-8 w-8 text-destructive" />
+            <CardTitle className="flex items-center gap-3">
+              {result.riskScore > 7 ? (
+                <ShieldAlert className={`h-8 w-8 text-destructive`} />
+              ) : result.riskScore > 4 ? (
+                 <ShieldAlert className={`h-8 w-8 text-yellow-500`} />
               ) : (
-                <ShieldCheck className="h-8 w-8 text-green-600" />
+                <ShieldCheck className={`h-8 w-8 text-green-600`} />
               )}
-              <span>Analysis Result</span>
+              Analysis Result
             </CardTitle>
           </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="space-y-1">
-              <h3 className="font-semibold">Conclusion</h3>
-              <p className="text-muted-foreground">{result.explanation}</p>
+          <CardContent className="space-y-6">
+            <div className="text-center p-6 rounded-lg bg-secondary">
+              <h3 className="text-sm font-medium text-muted-foreground">
+                Risk Score
+              </h3>
+              <p className={cn(`text-6xl font-bold`,
+                 {
+                    'text-destructive': result.riskScore > 7,
+                    'text-yellow-500': result.riskScore > 4 && result.riskScore <= 7,
+                    'text-green-600': result.riskScore <= 4
+                 }
+              )}>
+                {result.riskScore}/10
+              </p>
+              <Badge
+                variant={result.riskLevel === 'High' ? 'destructive' : result.riskLevel === 'Medium' ? 'secondary': 'default'}
+                className={cn({ 'bg-yellow-500 text-white': result.riskLevel === 'Medium', 'bg-green-600 text-white': result.riskLevel === 'Low' })}
+              >
+                {result.riskLevel} Risk
+              </Badge>
             </div>
-            {result.riskFactors.length > 0 && (
-                <div className="space-y-2">
-                    <h3 className="font-semibold">Risk Factors Identified</h3>
-                    <div className="flex flex-wrap gap-2">
-                        {result.riskFactors.map((factor, index) => (
-                        <Badge key={index} variant="destructive">
-                            {factor}
-                        </Badge>
-                        ))}
-                    </div>
+            
+            <div className="space-y-2">
+                <h3 className="font-semibold text-lg">Scam Indicators</h3>
+                <ul className="list-disc list-inside space-y-1 text-muted-foreground">
+                    {result.riskFactors.map((factor, index) => (
+                    <li key={index}><span className="font-semibold text-destructive">Red Flag:</span> {factor}</li>
+                    ))}
+                </ul>
+            </div>
+
+            <div className="space-y-2">
+                <h3 className="font-semibold text-lg">Recommended Actions</h3>
+                <ul className="list-disc list-inside space-y-1 text-muted-foreground">
+                    {result.recommendedActions.map((action, index) => (
+                    <li key={index}>{action}</li>
+                    ))}
+                </ul>
+            </div>
+            
+            {result.similarScam && (
+                <div className="p-4 rounded-md bg-blue-50 dark:bg-blue-900/20">
+                    <h3 className="font-semibold text-lg flex items-center gap-2"><BadgeInfo/> Similar Scams Database Match</h3>
+                    <p className="text-muted-foreground mt-2">{result.similarScam}</p>
                 </div>
             )}
+            
+            <div className="flex flex-wrap gap-2 pt-4 border-t">
+                <Button variant="destructive"><Ban className="mr-2"/>Block Recipient</Button>
+                <Button variant="outline">Report to Bank</Button>
+                <Button variant="outline"><Share className="mr-2"/>Share with Family</Button>
+                <Button variant="outline"><FileDown className="mr-2"/>Export Report</Button>
+            </div>
           </CardContent>
         </Card>
       )}
