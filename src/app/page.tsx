@@ -21,9 +21,8 @@ import {
   ChartLegend,
   ChartLegendContent,
 } from '@/components/ui/chart';
-import { Bar, Line, XAxis, YAxis, CartesianGrid, ResponsiveContainer } from 'recharts';
+import { Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer, BarChart as RechartsBarChart } from 'recharts';
 import Link from 'next/link';
-import { Button } from '@/components/ui/button';
 
 const chartData = [
   { month: 'January', desktop: 186, mobile: 80 },
@@ -118,7 +117,7 @@ export default function DashboardPage() {
           <CardContent className="pl-2">
             <ChartContainer config={chartConfig} className="h-[300px] w-full">
               <ResponsiveContainer>
-                <BarChart data={chartData}>
+                <RechartsBarChart data={chartData}>
                   <CartesianGrid vertical={false} />
                   <XAxis
                     dataKey="month"
@@ -131,7 +130,7 @@ export default function DashboardPage() {
                   <ChartLegend content={<ChartLegendContent />} />
                   <Bar dataKey="desktop" fill="var(--color-desktop)" radius={4} />
                   <Bar dataKey="mobile" fill="var(--color-mobile)" radius={4} />
-                </BarChart>
+                </RechartsBarChart>
               </ResponsiveContainer>
             </ChartContainer>
           </CardContent>
