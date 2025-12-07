@@ -18,7 +18,7 @@ import {
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Loader2, Sparkles, UploadCloud, FileText, Bot, HeartPulse, User, Car, Home, Plane, PawPrint, FileQuestion, HelpCircle, Info, FileCheck, FileX, Clock, Wallet, ShieldQuestion, AlertTriangle, Lightbulb, BookOpen, CheckSquare, Download } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
@@ -29,6 +29,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from './ui/accordion';
 import { Badge } from './ui/badge';
 import { Skeleton } from './ui/skeleton';
+import { Label } from './ui/label';
 
 
 const formSchema = z.object({
@@ -478,7 +479,7 @@ export default function InsuranceDecoderForm() {
   );
 }
 
-const InfoCard = ({ title, value, badgeColor }: { title: string, value: string, badgeColor?: string }) => (
+const InfoCard = ({ title, value, badgeColor }: { title: string, value: string | undefined, badgeColor?: string }) => (
   <div className="flex flex-col items-center justify-center p-4 bg-card rounded-lg text-center">
     <p className="text-sm text-muted-foreground">{title}</p>
     {badgeColor ? (
@@ -488,3 +489,5 @@ const InfoCard = ({ title, value, badgeColor }: { title: string, value: string, 
     )}
   </div>
 );
+
+    
