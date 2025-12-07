@@ -6,6 +6,7 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
+  CardFooter
 } from '@/components/ui/card';
 import {
   BarChart as LucideBarChart,
@@ -13,6 +14,12 @@ import {
   FileText,
   Landmark,
   ShieldAlert,
+  CheckCircle2,
+  AlertCircle,
+  Clock,
+  MoreHorizontal,
+  ArrowRight,
+  TrendingUp
 } from 'lucide-react';
 import {
   ChartContainer,
@@ -21,6 +28,8 @@ import {
   ChartLegend,
   ChartLegendContent,
 } from '@/components/ui/chart';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer, BarChart as RechartsBarChart } from 'recharts';
 import Link from 'next/link';
 
@@ -44,9 +53,16 @@ const chartConfig = {
   },
 };
 
+const liveTransactions = [
+  { id: 'TXN789', source: 'ICICI Bank Credit Card', amount: '₹1,250.00', description: 'Zomato Food Order', status: 'Verified', icon: CheckCircle2, color: 'text-green-500' },
+  { id: 'TXN790', source: 'HDFC Bank Account', amount: '₹8,000.00', description: 'Unknown UPI Request', status: 'Needs Review', icon: AlertCircle, color: 'text-yellow-500' },
+  { id: 'TXN791', source: 'PayTM Wallet', amount: '₹300.00', description: 'Mobile Recharge', status: 'Verified', icon: CheckCircle2, color: 'text-green-500' },
+  { id: 'TXN792', source: 'Google Pay', amount: '₹15,000.00', description: 'Rent Payment', status: 'Recurring', icon: Clock, color: 'text-blue-500' },
+]
+
 export default function DashboardPage() {
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
       <div className="flex items-center justify-between space-y-2">
         <h2 className="text-3xl font-bold tracking-tight font-headline">Dashboard</h2>
       </div>
@@ -68,14 +84,14 @@ export default function DashboardPage() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">
-              Active Alerts
+              Live Alerts
             </CardTitle>
             <ShieldAlert className="h-4 w-4 text-destructive" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-destructive">3</div>
+            <div className="text-2xl font-bold text-destructive">1</div>
             <p className="text-xs text-muted-foreground">
-              2 UPI transactions, 1 Loan offer
+              1 high-risk transaction detected
             </p>
           </CardContent>
         </Card>
@@ -106,7 +122,7 @@ export default function DashboardPage() {
           </CardContent>
         </Card>
       </div>
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-7">
         <Card className="col-span-4">
           <CardHeader>
             <CardTitle className="font-headline">Recent Activity</CardTitle>
@@ -173,6 +189,66 @@ export default function DashboardPage() {
           </CardContent>
         </Card>
       </div>
+
+       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-7">
+        <Card className="col-span-4">
+          <CardHeader>
+            <CardTitle>Live Transaction Feed</CardTitle>
+            <CardDescription>Real-time monitoring of your connected accounts.</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              {liveTransactions.map((tx) => (
+                <div key={tx.id} className="flex items-center gap-4">
+                  <div className={`p-2 bg-secondary rounded-full ${tx.color}`}>
+                    <tx.icon className="h-5 w-5" />
+                  </div>
+                  <div className="flex-grow">
+                    <p className="font-medium">{tx.description}</p>
+                    <p className="text-sm text-muted-foreground">{tx.source}</p>
+                  </div>
+                  <div className="text-right">
+                    <p className="font-semibold">{tx.amount}</p>
+                    <Badge variant={tx.status === 'Needs Review' ? 'destructive' : 'outline'} className="mt-1">{tx.status}</Badge>
+                  </div>
+                   <Button variant="ghost" size="icon">
+                    <MoreHorizontal className="h-4 w-4" />
+                  </Button>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+          <CardFooter>
+            <Button variant="outline" className="w-full">
+                View All Transactions <ArrowRight className="ml-2 h-4 w-4"/>
+            </Button>
+          </CardFooter>
+        </Card>
+        <Card className="col-span-4 lg:col-span-3">
+          <CardHeader>
+            <CardTitle>Smart Recommendations</CardTitle>
+            <CardDescription>AI-powered insights based on your activity.</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="flex items-start gap-4 p-4 bg-red-500/10 border border-destructive/20 rounded-lg">
+                <ShieldAlert className="h-6 w-6 text-destructive mt-1"/>
+                <div>
+                    <p className="font-semibold">High-Risk Alert</p>
+                    <p className="text-sm text-muted-foreground">A UPI payment request for <span className="font-bold">₹8,000</span> seems suspicious. We recommend you run a 'Deep Analysis'.</p>
+                     <Button size="sm" variant="destructive" className="mt-2">Check Now</Button>
+                </div>
+            </div>
+             <div className="flex items-start gap-4 p-4 bg-green-500/10 border border-green-500/20 rounded-lg">
+                <TrendingUp className="h-6 w-6 text-green-600 mt-1"/>
+                <div>
+                    <p className="font-semibold">Savings Opportunity</p>
+                    <p className="text-sm text-muted-foreground">Your new car insurance premium is 15% lower than your last one. You've saved an estimated <span className="font-bold">₹2,500</span>!</p>
+                </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
     </div>
   );
 }

@@ -14,6 +14,7 @@ import {
   FileText,
   History,
   Settings,
+  List,
 } from 'lucide-react';
 
 const navItems = [
@@ -21,6 +22,7 @@ const navItems = [
   { href: '/upi-scam-detector', label: 'UPI Scam Detector', icon: ShieldCheck },
   { href: '/loan-analyzer', label: 'Loan Analyzer', icon: Landmark },
   { href: '/insurance-decoder', label: 'Insurance Decoder', icon: FileText },
+  { href: '/transactions', label: 'Transactions', icon: List },
   { href: '/my-checks', label: 'My Checks', icon: History },
   { href: '/settings', label: 'Settings', icon: Settings },
 ];
