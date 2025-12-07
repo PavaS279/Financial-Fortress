@@ -19,13 +19,16 @@ import {
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Loader2, Sparkles, UploadCloud, FileText, Bot, HeartPulse, User, Car, Home, Plane, PawPrint, FileQuestion, HelpCircle, Info } from 'lucide-react';
+import { Loader2, Sparkles, UploadCloud, FileText, Bot, HeartPulse, User, Car, Home, Plane, PawPrint, FileQuestion, HelpCircle, Info, FileCheck, FileX, Clock, Wallet, ShieldQuestion, AlertTriangle, Lightbulb, BookOpen, CheckSquare, Download } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Separator } from './ui/separator';
 import { Popover, PopoverContent, PopoverTrigger } from './ui/popover';
 import { Checkbox } from './ui/checkbox';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from './ui/accordion';
+import { Badge } from './ui/badge';
+import { Skeleton } from './ui/skeleton';
 
 
 const formSchema = z.object({
@@ -101,6 +104,15 @@ export default function InsuranceDecoderForm() {
       // TODO: Add logic to extract text from PDF/image
     }
   }
+
+  const formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat('en-IN', {
+      style: 'currency',
+      currency: 'INR',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+    }).format(amount);
+  };
 
 
   return (
@@ -286,51 +298,193 @@ export default function InsuranceDecoderForm() {
       </form>
     </Form>
 
-      {isLoading && (
-         <Card className="mt-8">
-            <CardContent className="p-6 space-y-4 animate-pulse">
-                <div className="h-6 bg-muted rounded w-1/3"></div>
-                <div className="space-y-2">
-                    <div className="h-4 bg-muted rounded w-full"></div>
-                    <div className="h-4 bg-muted rounded w-full"></div>
-                    <div className="h-4 bg-muted rounded w-5/6"></div>
+    {isLoading && (
+        <div className="space-y-6 mt-8">
+            <Card>
+                <CardHeader>
+                    <Skeleton className="h-8 w-3/5" />
+                    <Skeleton className="h-4 w-4/5" />
+                </CardHeader>
+                <CardContent className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    {[...Array(4)].map((_, i) => <Skeleton key={i} className="h-20" />)}
+                </CardContent>
+            </Card>
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div className="lg:col-span-2 space-y-4">
+                    <Skeleton className="h-40 w-full" />
+                    <Skeleton className="h-40 w-full" />
                 </div>
-                 <div className="space-y-2 pt-4">
-                    <div className="h-4 bg-muted rounded w-1/3"></div>
-                    <div className="h-4 bg-muted rounded w-full"></div>
-                    <div className="h-4 bg-muted rounded w-4/6"></div>
+                <div className="space-y-4">
+                    <Skeleton className="h-48 w-full" />
+                    <Skeleton className="h-32 w-full" />
+                </div>
+            </div>
+        </div>
+    )}
+
+    {result && (
+    <div className="mt-8 space-y-6">
+        <Card className="bg-secondary/30">
+            <CardHeader>
+                <CardTitle className="flex items-center gap-3">
+                    <Sparkles className="h-6 w-6 text-primary" />
+                    Policy Overview
+                </CardTitle>
+                <CardDescription>
+                    A quick summary of your {result.policyOverview.policyType} insurance policy ({result.policyOverview.policyNumber}).
+                </CardDescription>
+            </CardHeader>
+            <CardContent className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <InfoCard title="Status" value={result.policyOverview.status} badgeColor={result.policyOverview.status === 'Active' ? 'bg-green-500' : 'bg-destructive'} />
+                <InfoCard title="Coverage" value={formatCurrency(result.policyOverview.coverageAmount)} />
+                <InfoCard title="Premium" value={result.policyOverview.premium} />
+                <InfoCard title="Tenure" value={result.policyOverview.tenure} />
+            </CardContent>
+             <CardFooter className="text-xs text-muted-foreground grid grid-cols-3 gap-2">
+                <span>Start: {result.policyOverview.keyDates.startDate}</span>
+                <span>Renewal: {result.policyOverview.keyDates.renewalDate}</span>
+                <span>Expiry: {result.policyOverview.keyDates.expiryDate}</span>
+            </CardFooter>
+        </Card>
+
+        <div className="grid md:grid-cols-2 gap-6">
+            <Card className='border-green-500/50'>
+                <CardHeader>
+                    <CardTitle className="flex items-center gap-2 text-green-600 dark:text-green-500"><FileCheck /> What's Covered</CardTitle>
+                    <CardDescription>{result.whatIsCovered.summary}</CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <Accordion type="single" collapsible className="w-full">
+                    {result.whatIsCovered.coverages.map((item, index) => (
+                        <AccordionItem value={`item-${index}`} key={index}>
+                            <AccordionTrigger>{item.name} <span className="ml-auto text-sm text-muted-foreground font-normal pr-2">{item.limit}</span></AccordionTrigger>
+                            <AccordionContent>{item.explanation}</AccordionContent>
+                        </AccordionItem>
+                    ))}
+                    </Accordion>
+                </CardContent>
+            </Card>
+            <Card className='border-destructive/50'>
+                <CardHeader>
+                    <CardTitle className="flex items-center gap-2 text-destructive"><FileX /> What's NOT Covered</CardTitle>
+                    <CardDescription>{result.whatIsNotCovered.summary}</CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <Accordion type="single" collapsible className="w-full">
+                    {result.whatIsNotCovered.exclusions.map((item, index) => (
+                        <AccordionItem value={`item-${index}`} key={index}>
+                            <AccordionTrigger>{item.name}</AccordionTrigger>
+                            <AccordionContent>{item.reason}</AccordionContent>
+                        </AccordionItem>
+                    ))}
+                    </Accordion>
+                </CardContent>
+            </Card>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <Card className="lg:col-span-2">
+                <CardHeader>
+                    <CardTitle className="flex items-center gap-2"><BookOpen /> Terms Explained</CardTitle>
+                    <CardDescription>A simple glossary of common insurance jargon in your policy.</CardDescription>
+                </CardHeader>
+                <CardContent>
+                     <dl className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4">
+                        {result.termsExplained.map((term, index) => (
+                            <div key={index} className="relative">
+                                <dt className="font-semibold text-foreground">{term.term}</dt>
+                                <dd className="text-muted-foreground">{term.definition}</dd>
+                            </div>
+                        ))}
+                    </dl>
+                </CardContent>
+            </Card>
+
+            <div className="space-y-6">
+                <Card>
+                    <CardHeader>
+                        <CardTitle className="flex items-center gap-2"><AlertTriangle/> Coverage Gaps</CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                        {result.coverageGaps.gaps.map((item, index) => (
+                            <div key={index} className="p-3 bg-secondary/50 rounded-lg">
+                                <p className="font-semibold">{item.gap}</p>
+                                <p className="text-sm text-muted-foreground">{item.recommendation} 
+                                    {item.estimatedCost && <span className="font-medium text-foreground"> (Est: {item.estimatedCost})</span>}
+                                </p>
+                            </div>
+                        ))}
+                        {result.coverageGaps.gaps.length === 0 && <p className="text-sm text-muted-foreground">No major coverage gaps found.</p>}
+                    </CardContent>
+                </Card>
+
+                <Card>
+                    <CardHeader>
+                        <CardTitle className="flex items-center gap-2"><Lightbulb /> Action Items</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <ul className="space-y-2">
+                            {result.actionItems.map((item, index) => (
+                                <li key={index} className="flex items-start gap-2 text-sm">
+                                    <CheckSquare className="h-4 w-4 mt-0.5 text-primary shrink-0" />
+                                    <span>{item}</span>
+                                </li>
+                            ))}
+                        </ul>
+                    </CardContent>
+                </Card>
+            </div>
+        </div>
+
+        <Card>
+            <CardHeader>
+                <CardTitle className="flex items-center gap-2"><ShieldQuestion /> Claim Process</CardTitle>
+                <CardDescription>A step-by-step guide to filing a claim.</CardDescription>
+            </CardHeader>
+            <CardContent className="grid md:grid-cols-2 gap-8">
+                <div>
+                    <h4 className="font-semibold mb-2">How to File a Claim</h4>
+                    <ol className="list-decimal list-inside space-y-2 text-muted-foreground marker:font-semibold marker:text-foreground">
+                        {result.claimProcess.steps.map((step, index) => <li key={index}>{step}</li>)}
+                    </ol>
+                </div>
+                 <div>
+                    <h4 className="font-semibold mb-2">Documents Needed</h4>
+                    <ul className="list-disc list-inside space-y-2 text-muted-foreground">
+                        {result.claimProcess.documentsNeeded.map((doc, index) => <li key={index}>{doc}</li>)}
+                    </ul>
+                </div>
+                <div className="md:col-span-2">
+                    <h4 className="font-semibold mb-2">Common Rejection Reasons</h4>
+                    <div className="flex flex-wrap gap-2">
+                        {result.claimProcess.commonRejectionReasons.map((reason, index) => (
+                            <Badge key={index} variant="destructive">{reason}</Badge>
+                        ))}
+                    </div>
                 </div>
             </CardContent>
+            <CardFooter className="justify-between items-center border-t pt-4 mt-4">
+                <div>
+                    <p className="font-semibold">Claim Contact</p>
+                    <p className="text-muted-foreground text-sm">{result.claimProcess.contactInfo}</p>
+                </div>
+                <Button><Download className="mr-2" /> Download Guide</Button>
+            </CardFooter>
         </Card>
-      )}
-
-      {result && (
-        <Card className="mt-8">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Sparkles className="h-6 w-6 text-primary" />
-              <span>Policy Summary</span>
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="prose dark:prose-invert max-w-none">
-            {result.summary.split('\n').map((paragraph, index) => {
-              if (paragraph.startsWith('### ')) {
-                return <h3 key={index}>{paragraph.substring(4)}</h3>;
-              }
-              if (paragraph.startsWith('## ')) {
-                return <h2 key={index}>{paragraph.substring(3)}</h2>;
-              }
-              if (paragraph.startsWith('# ')) {
-                return <h1 key={index}>{paragraph.substring(2)}</h1>;
-              }
-              if (paragraph.startsWith('* ')) {
-                return <li key={index}>{paragraph.substring(2)}</li>
-              }
-              return <p key={index}>{paragraph}</p>;
-            })}
-          </CardContent>
-        </Card>
-      )}
+        
+    </div>
+    )}
     </>
   );
 }
+
+const InfoCard = ({ title, value, badgeColor }: { title: string, value: string, badgeColor?: string }) => (
+  <div className="flex flex-col items-center justify-center p-4 bg-card rounded-lg text-center">
+    <p className="text-sm text-muted-foreground">{title}</p>
+    {badgeColor ? (
+      <Badge className={badgeColor}>{value}</Badge>
+    ) : (
+      <p className="text-lg font-bold">{value}</p>
+    )}
+  </div>
+);
