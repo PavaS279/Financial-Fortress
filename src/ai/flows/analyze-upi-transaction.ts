@@ -3,7 +3,7 @@
 /**
  * @fileOverview This file defines a Genkit flow for analyzing UPI transactions to identify potential scams.
  *
- * The flow takes UPI transaction details as input and returns a scam risk assessment.
+ * The flow takes UPI transaction details as input and returns a detailed scam risk assessment.
  *
  * @interface AnalyzeUpiTransactionInput - The input type for the analyzeUpiTransaction function.
  * @interface AnalyzeUpiTransactionOutput - The output type for the analyzeUpiTransaction function.
@@ -29,6 +29,9 @@ const AnalyzeUpiTransactionOutputSchema = z.object({
   similarScam: z.string().optional().describe('Details of a similar scam from a database if a match is found.'),
   isScam: z.boolean().describe('Whether the transaction is likely a scam.'),
   explanation: z.string().describe('Explanation of why the transaction is classified as a scam or not.'),
+  amountAnalysis: z.string().describe('Analysis of the transaction amount, e.g., if it is reasonable for the context.'),
+  recipientAnalysis: z.string().describe('Analysis of the recipient, e.g., if they are known, suspicious, or new.'),
+  patternDetection: z.string().describe('Analysis of transaction patterns, e.g., unusual timing or frequency.'),
 });
 
 export type AnalyzeUpiTransactionOutput = z.infer<typeof AnalyzeUpiTransactionOutputSchema>;
@@ -55,6 +58,9 @@ Your response must include:
 5.  If the transaction matches a known scam pattern, describe the similar scam.
 6.  A boolean 'isScam' field.
 7.  A brief 'explanation' of your assessment.
+8.  An 'amountAnalysis' of the transaction amount.
+9.  A 'recipientAnalysis' of the recipient.
+10. A 'patternDetection' analysis of the transaction patterns.
 `,
 });
 

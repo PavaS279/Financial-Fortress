@@ -29,7 +29,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import {
   Loader2,
   Shield,
@@ -39,6 +39,11 @@ import {
   FileDown,
   Ban,
   BadgeInfo,
+  TriangleAlert,
+  HelpCircle,
+  ShieldQuestion,
+  UserCheck,
+  ClipboardList
 } from 'lucide-react';
 import { Badge } from './ui/badge';
 import { cn } from '@/lib/utils';
@@ -98,9 +103,9 @@ export function UpiScamForm() {
   }
 
   const getRiskColor = (score: number) => {
-    if (score > 7) return 'red';
-    if (score > 4) return 'orange';
-    return 'green';
+    if (score > 7) return 'hsl(var(--destructive))';
+    if (score > 4) return 'hsl(var(--chart-4))';
+    return 'hsl(var(--chart-3))';
   };
   
   const riskColor = result ? getRiskColor(result.riskScore) : 'gray';
@@ -285,62 +290,92 @@ export function UpiScamForm() {
         <Card className="mt-8">
           <CardHeader>
             <CardTitle className="flex items-center gap-3">
-              {result.riskScore > 7 ? (
-                <ShieldAlert className={`h-8 w-8 text-destructive`} />
-              ) : result.riskScore > 4 ? (
-                 <ShieldAlert className={`h-8 w-8 text-yellow-500`} />
-              ) : (
-                <ShieldCheck className={`h-8 w-8 text-green-600`} />
-              )}
-              Analysis Result
+              <ShieldQuestion className="h-8 w-8 text-primary" />
+              Analysis Report
             </CardTitle>
+            <CardDescription>{result.explanation}</CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
-            <div className="text-center p-6 rounded-lg bg-secondary">
+            <div className="text-center p-6 rounded-lg bg-secondary/50 flex flex-col items-center">
               <h3 className="text-sm font-medium text-muted-foreground">
-                Risk Score
+                Overall Risk Score
               </h3>
-              <p className={cn(`text-6xl font-bold`,
-                 {
-                    'text-destructive': result.riskScore > 7,
-                    'text-yellow-500': result.riskScore > 4 && result.riskScore <= 7,
-                    'text-green-600': result.riskScore <= 4
-                 }
-              )}>
+              <p className="text-6xl font-bold" style={{color: riskColor}}>
                 {result.riskScore}/10
               </p>
+               <Progress value={result.riskScore * 10} className="h-2 w-full max-w-sm mt-2 [&>div]:bg-destructive" style={{ '--tw-bg-primary': riskColor, backgroundColor: 'hsl(var(--muted))' } as any} />
               <Badge
-                variant={result.riskLevel === 'High' ? 'destructive' : result.riskLevel === 'Medium' ? 'secondary': 'default'}
-                className={cn({ 'bg-yellow-500 text-white': result.riskLevel === 'Medium', 'bg-green-600 text-white': result.riskLevel === 'Low' })}
+                variant={result.riskLevel === 'High' ? 'destructive' : 'secondary'}
+                className={cn('mt-4', {
+                  'bg-yellow-500 text-primary-foreground hover:bg-yellow-500/80': result.riskLevel === 'Medium',
+                  'bg-green-600 text-primary-foreground hover:bg-green-600/80': result.riskLevel === 'Low',
+                })}
               >
                 {result.riskLevel} Risk
               </Badge>
             </div>
             
-            <div className="space-y-2">
-                <h3 className="font-semibold text-lg">Scam Indicators</h3>
-                <ul className="list-disc list-inside space-y-1 text-muted-foreground">
-                    {result.riskFactors.map((factor, index) => (
-                    <li key={index}><span className="font-semibold text-destructive">Red Flag:</span> {factor}</li>
-                    ))}
-                </ul>
+            <div className="space-y-4">
+                <h3 className="font-semibold text-lg border-b pb-2">Detailed Breakdown</h3>
+                <div className="grid gap-4 md:grid-cols-2">
+                    <Card>
+                        <CardHeader className="flex-row items-center gap-3 space-y-0">
+                            <TriangleAlert className="w-6 h-6 text-destructive"/>
+                            <CardTitle className="text-base">Red Flags Found</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            <ul className="space-y-2 text-sm text-muted-foreground">
+                                {result.riskFactors.map((factor, index) => (
+                                <li key={index} className="flex items-start gap-2">
+                                    <TriangleAlert className="w-4 h-4 mt-1 text-destructive shrink-0"/> 
+                                    <span>{factor}</span>
+                                </li>
+                                ))}
+                            </ul>
+                        </CardContent>
+                    </Card>
+                    <Card>
+                        <CardHeader className="flex-row items-center gap-3 space-y-0">
+                           <UserCheck className="w-6 h-6 text-primary"/>
+                            <CardTitle className="text-base">Recipient Analysis</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            <p className="text-sm text-muted-foreground">{result.recipientAnalysis}</p>
+                        </CardContent>
+                    </Card>
+                     <Card>
+                        <CardHeader className="flex-row items-center gap-3 space-y-0">
+                           <ClipboardList className="w-6 h-6 text-primary"/>
+                            <CardTitle className="text-base">Context Analysis</CardTitle>
+                        </CardHeader>
+                        <CardContent className="text-sm text-muted-foreground space-y-2">
+                            <p><span className='font-semibold text-foreground'>Amount:</span> {result.amountAnalysis}</p>
+                            <p><span className='font-semibold text-foreground'>Pattern:</span> {result.patternDetection}</p>
+                        </CardContent>
+                    </Card>
+
+                    {result.similarScam && (
+                        <Card>
+                            <CardHeader className="flex-row items-center gap-3 space-y-0">
+                               <BadgeInfo className="w-6 h-6 text-blue-500"/>
+                                <CardTitle className="text-base">Database Match</CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                                <p className="text-sm text-muted-foreground">{result.similarScam}</p>
+                            </CardContent>
+                        </Card>
+                    )}
+                </div>
             </div>
 
             <div className="space-y-2">
-                <h3 className="font-semibold text-lg">Recommended Actions</h3>
-                <ul className="list-disc list-inside space-y-1 text-muted-foreground">
+                <h3 className="font-semibold text-lg border-b pb-2">Recommended Actions</h3>
+                <ul className="list-disc list-inside space-y-2 text-muted-foreground marker:text-primary">
                     {result.recommendedActions.map((action, index) => (
                     <li key={index}>{action}</li>
                     ))}
                 </ul>
             </div>
-            
-            {result.similarScam && (
-                <div className="p-4 rounded-md bg-blue-50 dark:bg-blue-900/20">
-                    <h3 className="font-semibold text-lg flex items-center gap-2"><BadgeInfo/> Similar Scams Database Match</h3>
-                    <p className="text-muted-foreground mt-2">{result.similarScam}</p>
-                </div>
-            )}
             
             <div className="flex flex-wrap gap-2 pt-4 border-t">
                 <Button variant="destructive"><Ban className="mr-2"/>Block Recipient</Button>
