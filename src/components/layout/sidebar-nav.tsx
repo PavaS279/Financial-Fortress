@@ -37,10 +37,11 @@ export default function SidebarNav() {
             : pathname.startsWith(item.href);
         return (
           <SidebarMenuItem key={item.href}>
-            <Link href={item.href} passHref legacyBehavior>
+            <Link href={item.href}>
               <SidebarMenuButton
                 isActive={isActive}
                 tooltip={{ children: item.label }}
+                asChild={false} 
               >
                 <item.icon />
                 <span>{item.label}</span>
