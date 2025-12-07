@@ -44,7 +44,7 @@ export async function analyzeUpiTransaction(
 
 const analyzeUpiTransactionPrompt = ai.definePrompt({
   name: 'analyzeUpiTransactionPrompt',
-  model: 'models/gemini-1.5-pro-latest',
+  model: 'gemini-2.5-flash',
   input: {schema: AnalyzeUpiTransactionInputSchema},
   output: {schema: AnalyzeUpiTransactionOutputSchema},
   prompt: `You are an expert in identifying UPI scams in India.

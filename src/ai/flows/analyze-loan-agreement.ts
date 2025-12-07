@@ -70,7 +70,7 @@ export async function analyzeLoanAgreement(
 
 const analyzeLoanAgreementPrompt = ai.definePrompt({
   name: 'analyzeLoanAgreementPrompt',
-  model: 'models/gemini-1.5-pro-latest',
+  model: 'gemini-2.5-flash',
   input: {schema: AnalyzeLoanAgreementInputSchema},
   output: {schema: AnalyzeLoanAgreementOutputSchema},
   prompt: `You are an expert financial analyst specializing in decoding Indian loan agreements. Analyze the provided loan details and agreement text.
