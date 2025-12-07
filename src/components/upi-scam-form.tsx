@@ -32,18 +32,14 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import {
   Loader2,
-  Shield,
-  ShieldAlert,
-  ShieldCheck,
   Share,
   FileDown,
   Ban,
   BadgeInfo,
   TriangleAlert,
-  HelpCircle,
-  ShieldQuestion,
   UserCheck,
-  ClipboardList
+  ClipboardList,
+  ShieldQuestion
 } from 'lucide-react';
 import { Badge } from './ui/badge';
 import { cn } from '@/lib/utils';
@@ -303,7 +299,7 @@ export function UpiScamForm() {
               <p className="text-6xl font-bold" style={{color: riskColor}}>
                 {result.riskScore}/10
               </p>
-               <Progress value={result.riskScore * 10} className="h-2 w-full max-w-sm mt-2 [&>div]:bg-destructive" style={{ '--tw-bg-primary': riskColor, backgroundColor: 'hsl(var(--muted))' } as any} />
+               <Progress value={result.riskScore * 10} className="h-2 w-full max-w-sm mt-2" style={{'--tw-bg-primary': riskColor, backgroundColor: 'hsl(var(--muted))', '--primary': riskColor} as any} />
               <Badge
                 variant={result.riskLevel === 'High' ? 'destructive' : 'secondary'}
                 className={cn('mt-4', {
@@ -359,7 +355,7 @@ export function UpiScamForm() {
                             <CardHeader className="flex-row items-center gap-3 space-y-0">
                                <BadgeInfo className="w-6 h-6 text-blue-500"/>
                                 <CardTitle className="text-base">Database Match</CardTitle>
-                            </CardHeader>
+                            </Header>
                             <CardContent>
                                 <p className="text-sm text-muted-foreground">{result.similarScam}</p>
                             </CardContent>
