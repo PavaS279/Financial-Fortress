@@ -1,59 +1,110 @@
 import FeatureCard from '@/components/feature-card';
-import { ShieldAlert, Landmark, FileText } from 'lucide-react';
+import { ShieldAlert, Landmark, FileText, History } from 'lucide-react';
+import Link from 'next/link';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
+import { Badge } from '@/components/ui/badge';
+
+const checks = [
+  {
+    id: 'CHK-001',
+    type: 'UPI Scam',
+    status: 'Completed',
+    date: '2024-07-22',
+    result: 'High Risk',
+  },
+  {
+    id: 'CHK-002',
+    type: 'Loan Analysis',
+    status: 'Completed',
+    date: '2024-07-21',
+    result: 'Low Risk',
+  },
+  {
+    id: 'CHK-003',
+    type: 'Insurance Decode',
+    status: 'Completed',
+    date: '2024-07-20',
+    result: 'N/A',
+  },
+  {
+    id: 'CHK-004',
+    type: 'UPI Scam',
+    status: 'Completed',
+    date: '2024-07-19',
+    result: 'No Risk',
+  },
+];
 
 export default function MyChecksPage() {
   return (
-    <div className="container mx-auto px-4 py-12 sm:px-6 lg:px-8">
-      <div className="text-center">
-        <h1 className="text-4xl font-extrabold tracking-tight font-headline sm:text-5xl lg:text-6xl">
-          Your Financial Toolkit
-        </h1>
-        <p className="mt-4 max-w-2xl mx-auto text-xl text-muted-foreground">
-          Powerful tools to analyze, detect, and decode your financial world.
-        </p>
+    <div className="space-y-8">
+      <div className="flex items-center justify-between">
+        <div className="space-y-2">
+          <h1 className="text-3xl font-bold tracking-tight font-headline">
+            My Checks
+          </h1>
+          <p className="text-muted-foreground">
+            A history of all your financial analyses and checks.
+          </p>
+        </div>
       </div>
 
-      <div className="mt-12 grid gap-8 md:grid-cols-1 lg:grid-cols-3">
-        <FeatureCard
-          icon={<ShieldAlert className="h-10 w-10 text-destructive" />}
-          title="UPI Scam Detector"
-          description="Analyzes UPI transactions for fraud risk indicators using a proprietary tool and alerts you to potentially malicious activity."
-          buttonText="Start UPI Check"
-          href="/upi-scam-detector"
-          accentColor="red"
-          tips={[
-            'Verify the recipient\'s identity before sending money.',
-            'Never share your UPI PIN with anyone.',
-            'Beware of unsolicited payment requests.',
-          ]}
-        />
-        <FeatureCard
-          icon={<Landmark className="h-10 w-10 text-primary" />}
-          title="Loan Analyzer"
-          description="Evaluates loan offers and generates a risk assessment report based on the entered financial information."
-          buttonText="Analyze Loan"
-          href="/loan-analyzer"
-          accentColor="blue"
-          tips={[
-            'Compare interest rates from multiple lenders.',
-            'Read the fine print for hidden fees and charges.',
-            'Ensure the loan repayment terms fit your budget.',
-          ]}
-        />
-        <FeatureCard
-          icon={<FileText className="h-10 w-10 text-green-600 dark:text-green-500" />}
-          title="Insurance Decoder"
-          description="Simplifies complex insurance policies into plain language. Generates a user-friendly summary that highlights key terms, exclusions, and benefits."
-          buttonText="Decode Policy"
-          href="/insurance-decoder"
-          accentColor="green"
-          tips={[
-            'Understand the coverage limits and deductibles.',
-            'Check for exclusions that may void your policy.',
-            'Review your policy annually to ensure it still meets your needs.',
-          ]}
-        />
-      </div>
+      <Card>
+        <CardHeader>
+          <CardTitle>Check History</CardTitle>
+          <CardDescription>
+            Review your past financial analyses.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Check ID</TableHead>
+                <TableHead>Type</TableHead>
+                <TableHead>Date</TableHead>
+                <TableHead>Result</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {checks.map((check) => (
+                <TableRow key={check.id}>
+                  <TableCell className="font-medium">{check.id}</TableCell>
+                  <TableCell>{check.type}</TableCell>
+                  <TableCell>{check.date}</TableCell>
+                  <TableCell>
+                    <Badge
+                      variant={
+                        check.result === 'High Risk'
+                          ? 'destructive'
+                          : check.result === 'Low Risk'
+                            ? 'secondary'
+                            : 'outline'
+                      }
+                    >
+                      {check.result}
+                    </Badge>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </CardContent>
+      </Card>
     </div>
   );
 }

@@ -8,7 +8,7 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import {
-  BarChart,
+  BarChart as LucideBarChart,
   LineChart,
   FileText,
   Landmark,
@@ -46,7 +46,7 @@ const chartConfig = {
 
 export default function DashboardPage() {
   return (
-    <div className="flex-1 space-y-4 p-4 pt-6 md:p-8">
+    <div className="space-y-4">
       <div className="flex items-center justify-between space-y-2">
         <h2 className="text-3xl font-bold tracking-tight font-headline">Dashboard</h2>
       </div>
@@ -56,7 +56,7 @@ export default function DashboardPage() {
             <CardTitle className="text-sm font-medium">
               Overall Risk Score
             </CardTitle>
-            <BarChart className="h-4 w-4 text-muted-foreground" />
+            <LucideBarChart className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">24/100</div>
