@@ -24,12 +24,12 @@ const AnalyzeUpiTransactionOutputSchema = z.object({
   riskLevel: z
     .enum(['low', 'medium', 'high'])
     .describe('The risk level of the message (low, medium, or high).'),
+  riskScore: z.number().min(0).max(10).describe('A risk score from 1-10, where 10 is the highest risk.'),
   specificThreats: z
     .array(z.string())
     .describe('An array of specific threats identified in the message.'),
   explanation: z.string().describe('An explanation of why the message is considered risky.'),
   safetyTips: z.array(z.string()).describe('Safety tips for handling the message.'),
-  riskScore: z.number().min(0).max(10).describe('A risk score from 1-10, where 10 is the highest risk.'),
 });
 
 export type AnalyzeUpiTransactionOutput = z.infer<typeof AnalyzeUpiTransactionOutputSchema>;
