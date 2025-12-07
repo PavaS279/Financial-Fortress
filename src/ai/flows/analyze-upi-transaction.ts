@@ -46,7 +46,12 @@ const analyzeUpiTransactionPrompt = ai.definePrompt({
   name: 'analyzeUpiTransactionPrompt',
   input: {schema: AnalyzeUpiTransactionInputSchema},
   output: {schema: AnalyzeUpiTransactionOutputSchema},
-  prompt: `You are an expert in identifying UPI scams. Analyze the provided transaction details and determine if it is a potential scam.
+  prompt: `You are an expert in identifying UPI scams in India.
+You have access to a list of known scammer UPI IDs.
+Known Scammer UPI IDs: ['fraud@fakebank', 'scammer99@okscam', 'getrichquick@scamupi']
+
+Analyze the provided transaction details. Check if the recipient ID matches any in the known scammer list.
+Base your analysis on the user's input and this internal context.
 
 Transaction Details: {{{transactionDetails}}}
 
@@ -59,7 +64,7 @@ Your response must include:
 6.  A boolean 'isScam' field.
 7.  A brief 'explanation' of your assessment.
 8.  An 'amountAnalysis' of the transaction amount.
-9.  A 'recipientAnalysis' of the recipient.
+9.  A 'recipientAnalysis' of the recipient, explicitly mentioning if they are on the known scammer list.
 10. A 'patternDetection' analysis of the transaction patterns.
 `,
 });
