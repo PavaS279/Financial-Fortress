@@ -38,7 +38,6 @@ import {
   Ban,
   BadgeInfo,
   TriangleAlert,
-  UserCheck,
   ClipboardList,
   ShieldQuestion
 } from 'lucide-react';
@@ -48,7 +47,6 @@ import { useToast } from '@/hooks/use-toast';
 import { Progress } from '@/components/ui/progress';
 
 const formSchema = z.object({
-  transactionDetails: z.string().optional(),
   amount: z.coerce.number().positive('Amount must be positive.'),
   recipient: z.string().min(3, 'Recipient ID must be at least 3 characters.'),
   recipientType: z.enum(['individual', 'business', 'unknown']),
@@ -80,8 +78,9 @@ export function UpiScamForm() {
     setIsLoading(true);
     setResult(null);
 
-    const transactionDetails = `Amount: ₹${values.amount}, Recipient: ${values.recipient} (${values.recipientType}), Description: ${values.description}, Ref: ${values.referenceCode}`;
-    const input = { transactionDetails };
+    const messageContent = `Amount: ₹${values.amount}, Recipient: ${values.recipient}, Description: ${values.description || 'N/A'}`;
+    const context = `Recipient Type: ${values.recipientType}, Reference Code: ${values.referenceCode || 'N/A'}`;
+    const input = { messageContent, context };
 
     try {
       const analysisResult = await analyzeUpiTransaction(input);
@@ -302,10 +301,10 @@ export function UpiScamForm() {
               </p>
                <Progress value={result.riskScore * 10} className="h-2 w-full max-w-sm mt-2" style={{'--tw-bg-primary': riskColor, backgroundColor: 'hsl(var(--muted))', '--primary': riskColor} as any} />
               <Badge
-                variant={result.riskLevel === 'High' ? 'destructive' : 'secondary'}
-                className={cn('mt-4', {
-                  'bg-yellow-500 text-primary-foreground hover:bg-yellow-500/80': result.riskLevel === 'Medium',
-                  'bg-green-600 text-primary-foreground hover:bg-green-600/80': result.riskLevel === 'Low',
+                variant={result.riskLevel === 'high' ? 'destructive' : 'secondary'}
+                className={cn('mt-4 uppercase', {
+                  'bg-yellow-500 text-primary-foreground hover:bg-yellow-500/80': result.riskLevel === 'medium',
+                  'bg-green-600 text-primary-foreground hover:bg-green-600/80': result.riskLevel === 'low',
                 })}
               >
                 {result.riskLevel} Risk
@@ -314,62 +313,34 @@ export function UpiScamForm() {
             
             <div className="space-y-4">
                 <h3 className="font-semibold text-lg border-b pb-2">Detailed Breakdown</h3>
-                <div className="grid gap-4 md:grid-cols-2">
+                <div className="grid gap-4 md:grid-cols-1">
                     <Card>
                         <CardHeader className="flex-row items-center gap-3 space-y-0">
                             <TriangleAlert className="w-6 h-6 text-destructive"/>
-                            <CardTitle className="text-base">Red Flags Found</CardTitle>
+                            <CardTitle className="text-base">Specific Threats Found</CardTitle>
                         </CardHeader>
                         <CardContent>
                             <ul className="space-y-2 text-sm text-muted-foreground">
-                                {result.riskFactors.map((factor, index) => (
+                                {result.specificThreats.map((threat, index) => (
                                 <li key={index} className="flex items-start gap-2">
                                     <TriangleAlert className="w-4 h-4 mt-1 text-destructive shrink-0"/> 
-                                    <span>{factor}</span>
+                                    <span>{threat}</span>
                                 </li>
                                 ))}
+                                {result.specificThreats.length === 0 && (
+                                  <li className="flex items-start gap-2">No specific threats identified.</li>
+                                )}
                             </ul>
                         </CardContent>
                     </Card>
-                    <Card>
-                        <CardHeader className="flex-row items-center gap-3 space-y-0">
-                           <UserCheck className="w-6 h-6 text-primary"/>
-                            <CardTitle className="text-base">Recipient Analysis</CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                            <p className="text-sm text-muted-foreground">{result.recipientAnalysis}</p>
-                        </CardContent>
-                    </Card>
-                     <Card>
-                        <CardHeader className="flex-row items-center gap-3 space-y-0">
-                           <ClipboardList className="w-6 h-6 text-primary"/>
-                            <CardTitle className="text-base">Context Analysis</CardTitle>
-                        </CardHeader>
-                        <CardContent className="text-sm text-muted-foreground space-y-2">
-                            <p><span className='font-semibold text-foreground'>Amount:</span> {result.amountAnalysis}</p>
-                            <p><span className='font-semibold text-foreground'>Pattern:</span> {result.patternDetection}</p>
-                        </CardContent>
-                    </Card>
-
-                    {result.similarScam && (
-                        <Card>
-                            <CardHeader className="flex-row items-center gap-3 space-y-0">
-                               <BadgeInfo className="w-6 h-6 text-blue-500"/>
-                                <CardTitle className="text-base">Database Match</CardTitle>
-                            </CardHeader>
-                            <CardContent>
-                                <p className="text-sm text-muted-foreground">{result.similarScam}</p>
-                            </CardContent>
-                        </Card>
-                    )}
                 </div>
             </div>
 
             <div className="space-y-2">
-                <h3 className="font-semibold text-lg border-b pb-2">Recommended Actions</h3>
+                <h3 className="font-semibold text-lg border-b pb-2">Safety Tips</h3>
                 <ul className="list-disc list-inside space-y-2 text-muted-foreground marker:text-primary">
-                    {result.recommendedActions.map((action, index) => (
-                    <li key={index}>{action}</li>
+                    {result.safetyTips.map((tip, index) => (
+                    <li key={index}>{tip}</li>
                     ))}
                 </ul>
             </div>
@@ -386,5 +357,3 @@ export function UpiScamForm() {
     </>
   );
 }
-
-    

@@ -1,7 +1,7 @@
 'use server';
 
 /**
- * @fileOverview This file defines a Genkit flow for analyzing UPI transactions to identify potential scams.
+ * @fileOverview This file defines a Genkit flow for analyzing UPI transactions to identify potential scams and social engineering tactics.
  *
  * The flow takes UPI transaction details as input and returns a detailed scam risk assessment.
  *
@@ -14,24 +14,22 @@ import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
 
 const AnalyzeUpiTransactionInputSchema = z.object({
-  transactionDetails: z
-    .string()
-    .describe('Details of the UPI transaction, including amount, recipient, recipient type, description, and any reference codes.'),
+  messageContent: z.string().describe('The full details of the transaction to analyze, including amount, recipient, and description.'),
+  context: z.string().describe('The context of the transaction, such as who the recipient is (individual, business) and any reference codes.'),
 });
 
 export type AnalyzeUpiTransactionInput = z.infer<typeof AnalyzeUpiTransactionInputSchema>;
 
 const AnalyzeUpiTransactionOutputSchema = z.object({
+  riskLevel: z
+    .enum(['low', 'medium', 'high'])
+    .describe('The risk level of the message (low, medium, or high).'),
+  specificThreats: z
+    .array(z.string())
+    .describe('An array of specific threats identified in the message.'),
+  explanation: z.string().describe('An explanation of why the message is considered risky.'),
+  safetyTips: z.array(z.string()).describe('Safety tips for handling the message.'),
   riskScore: z.number().min(0).max(10).describe('A risk score from 1-10, where 10 is the highest risk.'),
-  riskLevel: z.enum(['Low', 'Medium', 'High']).describe('The overall risk level of the transaction.'),
-  riskFactors: z.array(z.string()).describe('List of specific risk factors or red flags identified in the transaction.'),
-  recommendedActions: z.array(z.string()).describe('A list of recommended actions for the user to take.'),
-  similarScam: z.string().optional().describe('Details of a similar scam from a database if a match is found.'),
-  isScam: z.boolean().describe('Whether the transaction is likely a scam.'),
-  explanation: z.string().describe('Explanation of why the transaction is classified as a scam or not.'),
-  amountAnalysis: z.string().describe('Analysis of the transaction amount, e.g., if it is reasonable for the context.'),
-  recipientAnalysis: z.string().describe('Analysis of the recipient, e.g., if they are known, suspicious, or new.'),
-  patternDetection: z.string().describe('Analysis of transaction patterns, e.g., unusual timing or frequency.'),
 });
 
 export type AnalyzeUpiTransactionOutput = z.infer<typeof AnalyzeUpiTransactionOutputSchema>;
@@ -47,27 +45,33 @@ const analyzeUpiTransactionPrompt = ai.definePrompt({
   model: 'gemini-2.5-flash',
   input: {schema: AnalyzeUpiTransactionInputSchema},
   output: {schema: AnalyzeUpiTransactionOutputSchema},
-  prompt: `You are an expert in identifying UPI scams in India.
-You have access to a list of known scammer UPI IDs.
+  prompt: `You are an expert in identifying UPI scams in India. Analyze the following UPI transaction for phishing and social engineering tactics. Provide a risk assessment and safety tips.
+
+Transaction Details:
+{{{messageContent}}}
+
+Context:
+{{{context}}}
+
 Known Scammer UPI IDs: ['fraud@fakebank', 'scammer99@okscam', 'getrichquick@scamupi']
 
-Analyze the provided transaction details. Check if the recipient ID matches any in the known scammer list.
-Base your analysis on the user's input and this internal context.
+Evaluate for:
+1.  Urgency manipulation tactics (e.g., "pay immediately to avoid penalty").
+2.  Authority impersonation (e.g., pretending to be from a bank or government agency).
+3.  Suspicious requests for refunds or "unlocking" money.
+4.  Emotional manipulation (e.g., fake charity or emergency story).
+5.  Information harvesting attempts (e.g., asking for PIN or other details).
+6.  Comparison of recipient ID to the known scammer list.
+7.  Unusually high or odd transaction amounts.
 
-Transaction Details: {{{transactionDetails}}}
+Return a JSON object with the following keys:
+- riskLevel: (low, medium, or high)
+- riskScore: (a number from 0 to 10 based on the severity and number of threats)
+- specificThreats: (an array of specific threats or red flags identified)
+- explanation: (a clear, concise explanation of your assessment)
+- safetyTips: (an array of actionable safety tips for the user)
 
-Your response must include:
-1.  A risk score from 1-10 (10 being highest risk).
-2.  A risk level ('Low', 'Medium', 'High').
-3.  A list of specific red flags (riskFactors).
-4.  A list of recommended actions for the user.
-5.  If the transaction matches a known scam pattern, describe the similar scam.
-6.  A boolean 'isScam' field.
-7.  A brief 'explanation' of your assessment.
-8.  An 'amountAnalysis' of the transaction amount.
-9.  A 'recipientAnalysis' of the recipient, explicitly mentioning if they are on the known scammer list.
-10. A 'patternDetection' analysis of the transaction patterns.
-`,
+Ensure that the returned JSON is valid and parsable.`,
 });
 
 const analyzeUpiTransactionFlow = ai.defineFlow(
