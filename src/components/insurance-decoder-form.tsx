@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState } from 'react';
@@ -69,6 +70,10 @@ export default function InsuranceDecoderForm() {
       policyText: '',
       insuranceType: 'health',
       simpleLanguage: true,
+      policyNumber: '',
+      coverageAmount: '' as any,
+      premiumAmount: '' as any,
+      specificQuestions: '',
     },
   });
 
@@ -489,5 +494,7 @@ const InfoCard = ({ title, value, badgeColor }: { title: string, value: string |
     )}
   </div>
 );
+
+    
 
     

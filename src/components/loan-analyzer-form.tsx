@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState } from 'react';
@@ -68,6 +69,12 @@ export default function LoanAnalyzerForm() {
     defaultValues: {
       loanType: 'personal',
       analysisType: 'comprehensive',
+      principal: '' as any,
+      rate: '' as any,
+      tenure: '' as any,
+      processingFee: '' as any,
+      lender: '',
+      agreementText: '',
     },
   });
 
@@ -417,3 +424,5 @@ export default function LoanAnalyzerForm() {
     </>
   );
 }
+
+    
