@@ -355,7 +355,7 @@ export function UpiScamForm() {
                             <CardHeader className="flex-row items-center gap-3 space-y-0">
                                <BadgeInfo className="w-6 h-6 text-blue-500"/>
                                 <CardTitle className="text-base">Database Match</CardTitle>
-                            </Header>
+                            </CardHeader>
                             <CardContent>
                                 <p className="text-sm text-muted-foreground">{result.similarScam}</p>
                             </CardContent>
