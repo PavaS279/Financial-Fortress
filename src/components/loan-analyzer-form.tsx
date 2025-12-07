@@ -76,7 +76,7 @@ export default function LoanAnalyzerForm() {
     event.stopPropagation();
     setIsDragging(false);
     if (event.dataTransfer.files && event.dataTransfer.files[0]) {
-      setFile(event.data.transfer.files[0]);
+      setFile(event.dataTransfer.files[0]);
     }
   }
 
@@ -226,7 +226,7 @@ export default function LoanAnalyzerForm() {
                     <FormItem>
                       <FormLabel>Loan Tenure (months)</FormLabel>
                       <FormControl><Input type="number" placeholder="60" {...field} /></FormControl>
-                    </Item>
+                    </FormItem>
                   )}
                 />
                  <FormField
@@ -236,7 +236,7 @@ export default function LoanAnalyzerForm() {
                     <FormItem>
                       <FormLabel>Processing Fee</FormLabel>
                       <FormControl><Input type="number" placeholder="₹ 5,000" {...field} /></FormControl>
-                    </Item>
+                    </FormItem>
                   )}
                 />
             </div>
