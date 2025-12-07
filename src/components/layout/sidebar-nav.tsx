@@ -4,6 +4,7 @@ import {
   SidebarMenu,
   SidebarMenuItem,
   SidebarMenuButton,
+  useSidebar,
 } from '@/components/ui/sidebar';
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
@@ -31,6 +32,13 @@ const navItems = [
 
 export default function SidebarNav() {
   const pathname = usePathname();
+  const { setOpenMobile, isMobile } = useSidebar();
+
+  const handleLinkClick = () => {
+    if (isMobile) {
+      setOpenMobile(false);
+    }
+  };
 
   return (
     <SidebarMenu>
@@ -41,7 +49,7 @@ export default function SidebarNav() {
             : pathname.startsWith(item.href);
         return (
           <SidebarMenuItem key={item.href}>
-            <Link href={item.href}>
+            <Link href={item.href} onClick={handleLinkClick}>
               <SidebarMenuButton
                 isActive={isActive}
                 tooltip={{ children: item.label }}
