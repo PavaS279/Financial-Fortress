@@ -1,0 +1,86 @@
+
+name: Financial Fortress CI/CD
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  validate:
+    name: "Validate Pull Request"
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+        cache: 'npm'
+
+    - name: Install dependencies
+      run: npm install
+
+    - name: Run ESLint
+      run: npm run lint
+
+    - name: Run TypeScript type checking
+      run: npm run typecheck
+      
+    # Placeholder for tests - you can add your test runner here
+    # - name: Run unit tests
+    #   run: npm test
+
+    # - name: Check code coverage
+    #   run: npm run test:coverage
+
+
+  deploy:
+    name: "Build and Deploy to Production"
+    needs: validate
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+        cache: 'npm'
+
+    - name: Install dependencies
+      run: npm install
+
+    - name: Build Next.js app
+      env:
+        # These would be loaded from GitHub secrets
+        # NEXT_PUBLIC_API_URL: ${{ secrets.NEXT_PUBLIC_API_URL }}
+        # GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
+        # FIREBASE_CONFIG: ${{ secrets.FIREBASE_CONFIG }}
+      run: npm run build
+
+    - name: Deploy to Firebase App Hosting
+      uses: 'firebase/actions/setup-gcloud'
+      with:
+        project_id: ${{ secrets.FIREBASE_PROJECT_ID }}
+        service_account_key: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_KEY }}
+      # This action would typically be followed by a deploy command:
+      # run: gcloud app hosting backends deploy
+
+    # Placeholder for smoke tests after deployment
+    # - name: Run smoke tests
+    #   run: npm run test:smoke
+
+    - name: Create Release Notes
+      uses: release-drafter/release-drafter@v5
+      with:
+        config-name: release-drafter.yml
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
