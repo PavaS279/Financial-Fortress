@@ -79,7 +79,7 @@ export async function summarizeInsurancePolicy(input: SummarizeInsurancePolicyIn
 
 const prompt = ai.definePrompt({
   name: 'summarizeInsurancePolicyPrompt',
-  model: 'gemini-pro',
+  model: 'models/gemini-1.5-pro-latest',
   input: {schema: SummarizeInsurancePolicyInputSchema},
   output: {schema: SummarizeInsurancePolicyOutputSchema},
   prompt: `You are an expert at simplifying complex Indian insurance policies into plain, scannable, and actionable language.
