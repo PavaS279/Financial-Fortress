@@ -15,6 +15,7 @@ import {
   History,
   Settings,
   List,
+  Users,
 } from 'lucide-react';
 
 const navItems = [
@@ -24,6 +25,7 @@ const navItems = [
   { href: '/insurance-decoder', label: 'Insurance Decoder', icon: FileText },
   { href: '/transactions', label: 'Transactions', icon: List },
   { href: '/my-checks', label: 'My Checks', icon: History },
+  { href: '/community', label: 'Community', icon: Users },
   { href: '/settings', label: 'Settings', icon: Settings },
 ];
 
